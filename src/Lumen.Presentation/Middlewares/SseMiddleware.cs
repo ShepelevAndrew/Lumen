@@ -1,6 +1,7 @@
 ﻿using Lumen.Core.Application;
 using Lumen.Core.Domain;
-using Lumen.Core.Domain.Enums;
+using Lumen.Core.Domain.ServerMessages;
+using Lumen.Core.Domain.ServerMessages.Abstractions;
 using Lumen.Core.Domain.ValueObjects;
 using Lumen.Presentation.Configurations;
 using Microsoft.AspNetCore.Http;
@@ -30,10 +31,11 @@ public class SseMiddleware(
         try
         {
             await sseService.ListenAsync(sseClient.Id, context.RequestAborted);
+            await RemoveClientAndSendServerMessage(sseClient.Id, new DisconnectedServerMessage());
         }
-        catch
+        catch (Exception ex)
         {
-            await HandleConnectionError(sseClient.Id);
+            await RemoveClientAndSendServerMessage(sseClient.Id, new ErrorServerMessage(ex.Message));
         }
     }
 
@@ -50,9 +52,11 @@ public class SseMiddleware(
         sseService.AddClient(sseClient);
     }
 
-    private async Task HandleConnectionError(SseClientId clientId)
+    private async Task RemoveClientAndSendServerMessage(
+        SseClientId clientId,
+        IServerMessage serverMessage)
     {
-        await sseService.SendServerMessage(clientId, ServerMessageType.Disconnected);
+        await sseService.SendServerMessage(clientId, serverMessage);
         await sseService.RemoveClient(clientId);
     }
 

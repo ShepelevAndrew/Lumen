@@ -1,7 +1,8 @@
 ﻿using System.Collections.Concurrent;
 using Lumen.Core.Application.Configurations;
 using Lumen.Core.Domain;
-using Lumen.Core.Domain.Enums;
+using Lumen.Core.Domain.ServerMessages;
+using Lumen.Core.Domain.ServerMessages.Abstractions;
 using Lumen.Core.Domain.ValueObjects;
 
 namespace Lumen.Core.Application;
@@ -12,22 +13,30 @@ public interface ISseService
 
     void AddClient(SseClient client);
 
-    Task RemoveClient(SseClientId client);
+    Task RemoveClient(SseClientId id);
 
     Task ListenAsync(
-        SseClientId client,
+        SseClientId id,
         CancellationToken ct);
 
-    bool ClientExists(SseClientId client);
+    bool ClientExists(Guid clientId);
+
+    bool ClientExists(SseClientId id);
 
     Task SendAsync(
-        SseClientId toClient,
+        SseClientId id,
+        string? eventName,
+        string eventData,
+        CancellationToken ct = default);
+
+    Task SendAsync(
+        SseClientId id,
         string message,
         CancellationToken ct = default);
 
     Task SendServerMessage(
-        SseClientId toClient,
-        ServerMessageType message,
+        SseClientId id,
+        IServerMessage message,
         CancellationToken ct = default);
 }
 
@@ -44,65 +53,59 @@ public class SseService(SseConfig config) : ISseService
 
     public void AddClient(SseClient client) => _clients[client.Id] = client;
 
-    public async Task RemoveClient(SseClientId clientId)
+    public async Task RemoveClient(SseClientId id)
     {
-        if (_clients.TryGetValue(clientId, out var client))
+        if (_clients.TryGetValue(id, out var client))
         {
             await client.ResponseWriter.DisposeAsync();
-            _clients.Remove(clientId, out _);
+            _clients.Remove(id, out _);
         }
     }
 
-    public async Task SendServerMessage(
-        SseClientId toClientId,
-        ServerMessageType message,
-        CancellationToken ct = default)
-    {
-        var (serverEventName, serverEventData) = message switch
-        {
-            ServerMessageType.Connected => ("open", "The server is connected."),
-            ServerMessageType.KeepAlive => ("ping", "keep_alive"),
-            ServerMessageType.Disconnected => ("disconnect", "The server is shutting down."),
-            _ => throw new ArgumentOutOfRangeException(nameof(message), message, null)
-        };
-
-        var eventMessage = $"event: {serverEventName}\ndata: {serverEventData}\n\n";
-
-        await SendAsync(toClientId, eventMessage, ct);
-    }
-
     public async Task ListenAsync(
-        SseClientId clientId,
+        SseClientId id,
         CancellationToken ct)
     {
-        await SendServerMessage(clientId, ServerMessageType.Connected, ct);
+        await SendServerMessage(id, new ConnectedServerMessage(), ct);
 
-        while (_clients.TryGetValue(clientId, out var client))
+        while (_clients.TryGetValue(id, out var client))
         {
             ct.ThrowIfCancellationRequested();
 
             if(client.ReceivedEvents > config.MaxEventsForConnection)
-                throw new Exception($"Client {clientId} has reached the maximum number of events.");
+                break;
 
             if(client.GetLiveDuration() > _connectionMaxLive && _connectionMaxLive != TimeSpan.Zero)
-                throw new TimeoutException();
+                break;
 
             if (config.PingIntervalMilliseconds == 0)
                 continue;
 
             await Task.Delay(config.PingIntervalMilliseconds, ct);
-            await SendServerMessage(clientId, ServerMessageType.KeepAlive, ct);
+            await SendServerMessage(id, new KeepAliveServerMessage(), ct);
         }
     }
 
-    public bool ClientExists(SseClientId clientId) => _clients.ContainsKey(clientId);
+    public bool ClientExists(SseClientId id) => _clients.ContainsKey(id);
+
+    public bool ClientExists(Guid clientId) => _clients.Keys.Any(key => key.ClientId == clientId);
 
     public async Task SendAsync(
-        SseClientId toClientId,
+        SseClientId id,
+        string? eventName,
+        string eventData,
+        CancellationToken ct = default)
+    {
+        var eventMessage = $"event: {eventName}\ndata: {eventData}\n\n";
+        await SendAsync(id, eventMessage, ct);
+    }
+
+    public async Task SendAsync(
+        SseClientId id,
         string message,
         CancellationToken ct = default)
     {
-        if (_clients.TryGetValue(toClientId, out var client))
+        if (_clients.TryGetValue(id, out var client))
         {
             try
             {
@@ -113,8 +116,14 @@ public class SseService(SseConfig config) : ISseService
             }
             catch
             {
-                await RemoveClient(toClientId);
+                await RemoveClient(id);
             }
         }
     }
+
+    public async Task SendServerMessage(
+        SseClientId id,
+        IServerMessage serverMessage,
+        CancellationToken ct = default)
+        => await SendAsync(id, serverMessage.Event, serverMessage.Data, ct);
 }

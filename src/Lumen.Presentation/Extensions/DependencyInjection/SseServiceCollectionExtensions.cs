@@ -8,10 +8,13 @@ public static class SseServiceCollectionExtensions
 {
     public static IServiceCollection AddSse(
         this IServiceCollection services,
-        SseConfig config)
+        Action<SseConfig>? configure = null)
     {
+        var sseConfig = new SseConfig();
+        configure?.Invoke(sseConfig);
+
         return services
-            .AddSingleton(config)
+            .AddSingleton(sseConfig)
             .AddSingleton<ISseService, SseService>()
             .AddScoped<ISseBuilder, SseSender>();
     }

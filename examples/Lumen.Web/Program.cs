@@ -1,5 +1,4 @@
 using Lumen.Core.Application;
-using Lumen.Core.Application.Configurations;
 using Lumen.Presentation.Extensions.DependencyInjection;
 using Lumen.Web.Models;
 
@@ -7,10 +6,12 @@ var builder = WebApplication.CreateBuilder(args);
 {
     builder.Services.AddCors(options => options.AddPolicy("AllowAll", policy => policy.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader()));
 
-    builder.Services.AddSse(config: new SseConfig(
-        PingIntervalMilliseconds: 10_000,
-        ConnectionLiveMinutes: 5,
-        MaxEventsForConnection: 10));
+    builder.Services.AddSse(configure: config =>
+    {
+        config.PingIntervalMilliseconds = 10_000;
+        config.ConnectionLiveMinutes = 1;
+        config.MaxEventsForConnection = 100;
+    });
 }
 
 var app = builder.Build();
@@ -42,8 +43,10 @@ app.MapPost("/send-message/{clientId:guid}", async (
     Message message,
     ISseBuilder sse) =>
 {
+    const string eventType = "new_message";
+
     var sender = sse.Build()
-        .SetEventName("new_message")
+        .SetEventName(eventType)
         .SetData(message);
 
     if(deviceId != null)

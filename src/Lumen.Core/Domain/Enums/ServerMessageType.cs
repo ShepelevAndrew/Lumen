@@ -4,5 +4,6 @@ public enum ServerMessageType
 {
     Connected,
     KeepAlive,
-    Disconnected
+    Disconnected,
+    Error
 }
