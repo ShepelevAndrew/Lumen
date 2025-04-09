@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
         <TargetFramework>net9.0</TargetFramework>
@@ -7,12 +7,21 @@
         <Version>1.0.0</Version>
         <Authors>Shepeliev Andrii</Authors>
         <Company>Lumen</Company>
-        <PackageId>Lumen</PackageId>
+        <PackageId>Lumen.SSE</PackageId>
+        <PackageIcon>lumen-sse-icon.png</PackageIcon>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
         <Description>A lightweight and flexible Server-Sent Events (SSE) library for ASP.NET Core. Easily stream real-time events from your server to browser clients using a simple, extensible API. Supports connection management, custom event types, client identification, and built-in heartbeat/keep-alive logic.</Description>
+        <PackageLicenseExpression>MIT</PackageLicenseExpression>
         <PackageTags>Lumen;SSE;ServerSentEvents;EventStream;RealTime;ASP.NET;ASPNETCore;SignalR;Lightweight;PushEvents;Middleware;Streaming;HTTP1;HTTP2;HTTP3</PackageTags>
         <RepositoryUrl>https://github.com/ShepelevAndrew/lumen</RepositoryUrl>
+        <RepositoryType>git</RepositoryType>
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     </PropertyGroup>
+
+    <ItemGroup>
+        <None Include="..\..\docs\README.md" Pack="true" PackagePath="\"/>
+        <None Include="..\..\assets\lumen-sse-icon.png" Pack="true" PackagePath="\"/>
+    </ItemGroup>
 
     <ItemGroup>
       <PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="2.3.0" />
