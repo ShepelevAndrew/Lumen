@@ -2,7 +2,7 @@
 using Lumen.Core.Application.Configurations;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Lumen.Presentation.Extensions.DependencyInjection;
+namespace Lumen.Extensions.DependencyInjection;
 
 public static class SseServiceCollectionExtensions
 {

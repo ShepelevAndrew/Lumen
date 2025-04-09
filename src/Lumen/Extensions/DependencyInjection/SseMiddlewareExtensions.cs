@@ -1,9 +1,9 @@
-﻿using Lumen.Presentation.Configurations;
-using Lumen.Presentation.Middlewares;
+﻿using Lumen.Configurations;
+using Lumen.Middlewares;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Options;
 
-namespace Lumen.Presentation.Extensions.DependencyInjection;
+namespace Lumen.Extensions.DependencyInjection;
 
 public static class SseMiddlewareExtensions
 {

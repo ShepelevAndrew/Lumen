@@ -1,5 +1,5 @@
 using Lumen.Core.Application;
-using Lumen.Presentation.Extensions.DependencyInjection;
+using Lumen.Extensions.DependencyInjection;
 using Lumen.Web.Models;
 
 var builder = WebApplication.CreateBuilder(args);

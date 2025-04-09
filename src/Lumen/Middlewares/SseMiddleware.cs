@@ -1,13 +1,13 @@
-﻿using Lumen.Core.Application;
+﻿using Lumen.Configurations;
+using Lumen.Core.Application;
 using Lumen.Core.Domain;
 using Lumen.Core.Domain.ServerMessages;
 using Lumen.Core.Domain.ServerMessages.Abstractions;
 using Lumen.Core.Domain.ValueObjects;
-using Lumen.Presentation.Configurations;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Options;
 
-namespace Lumen.Presentation.Middlewares;
+namespace Lumen.Middlewares;
 
 public class SseMiddleware(
     RequestDelegate next,

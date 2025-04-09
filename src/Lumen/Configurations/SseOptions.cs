@@ -2,7 +2,7 @@
 using Lumen.Core.Domain;
 using Microsoft.AspNetCore.Http;
 
-namespace Lumen.Presentation.Configurations;
+namespace Lumen.Configurations;
 
 public class SseOptions
 {
