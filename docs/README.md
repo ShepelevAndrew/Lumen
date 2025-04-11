@@ -32,81 +32,36 @@ dotnet add package Lumen.SSE
 
 ```csharp
 var builder = WebApplication.CreateBuilder(args);
-
-builder.Services.AddSse(config =>
-{
-    config.PingIntervalMilliseconds = 30_000;
-    config.ConnectionLiveMinutes = null;
-    config.MaxEventsForConnection = null;
-});
+builder.Services.AddSse();
 ```
 
 #### 2. Configure middleware
 
 ```csharp
 var app = builder.Build();
-
-app.UseSse(options =>
-{
-    options.ConnectionPath = "/sse/connection";
-
-    options.UserId = ctx =>
-    {
-        var userId = ctx.Request.Query["userId"].FirstOrDefault() ?? string.Empty;
-        return Guid.Parse(userId);
-    };
-
-    options.DeviceId = ctx =>
-    {
-        var deviceIdQuery = ctx.Request.Query["deviceId"].FirstOrDefault();
-        return Guid.TryParse(deviceIdQuery, out var id) ? id : null;
-    };
-});
+app.UseSse();
 ```
 
 #### 3. Send events
 
 ```csharp
-app.MapPost("/send-message/{clientId:guid}", async (
-    Guid clientId,
-    Guid? deviceId,
+app.MapPost("/send-message", async (
     Message message,
-    ISseBuilder sse) =>
-{
-    const string eventType = "new_message";
-
-    var sender = sse.Build()
-        .SetEventName(eventType)
-        .SetData(message);
-
-    if (deviceId != null)
-        await sender.SendAsync(clientId, deviceId.Value);
-    else
-        await sender.SendToClientAllDevicesAsync(clientId);
-});
+    ISseBuilder sse)
+    => await sse.Build()
+        .SetEventName("new_message")
+        .SetData(message)
+        .SendToAllClientsAsync(clientId));
 ```
 
 ### 📡 Client-Side (JavaScript)
 
 ```js
-const userId = "e4d65e91-8dc1-49fb-a13f-bb07f847fcb4";
-const deviceId = "bce0f4a6-73ff-45dc-aede-678942aec99e";
-
-const sseUrl = `https://localhost:7287/sse/connection?userId=${userId}&deviceId=${deviceId}`;
-
+const sseUrl = `https://localhost:7287/sse/connection`;
 const eventSource = new EventSource(sseUrl);
 
 eventSource.onopen = () => {
     console.log("✅ Connected to SSE server");
-};
-
-eventSource.onmessage = (event) => {
-    try {
-        const parsedData = JSON.parse(event.data);
-        console.log("📨 Json Message:", parsedData);
-    } catch (error) {
-        console.warn("📨 Default Message:", event.data);
-    }
 };
 
 eventSource.addEventListener("new_message", (event) => {
@@ -114,16 +69,44 @@ eventSource.addEventListener("new_message", (event) => {
     console.log("📨 New Message:", parsedData);
 });
 
-eventSource.addEventListener("ping", (event) => {
-    console.log("🔁 Ping:", event.data);
-});
-
-eventSource.addEventListener("disconnect", (event) => {
-    console.warn("❌ Disconnected:", event.data);
-    eventSource.close();
-});
-
 eventSource.onerror = (err) => {
     console.error("🚨 SSE connection error:", err);
 };
 ```
+
+---
+
+## 🔍 SSE vs WebSockets
+
+| Feature              | **SSE (Server-Sent Events)**                           | **WebSockets**                                      |
+|---------------------|---------------------------------------------------------|-----------------------------------------------------|
+| **Direction**        | Server ➜ Client (one-way)                              | Bi-directional (Client ⬄ Server)                    |
+| **Protocol**         | HTTP/1.1 (works with HTTP/2 partial support)           | Custom over TCP (upgrades from HTTP)                |
+| **Browser Support**  | Widely supported, except for IE/old Edge               | Widely supported                                    |
+| **Complexity**       | Simple to implement                                     | More complex (stateful, needs connection management)|
+| **Reconnection**     | Built-in automatic reconnection                        | Manual reconnection logic                           |
+| **Use Case**         | Notifications, live feeds, updates                     | Chat apps, multiplayer games, complex interaction   |
+| **Proxy-Friendly**   | Yes                                                    | Sometimes blocked by firewalls/proxies              |
+
+🟢 **Use SSE** when:
+- You only need **server-to-client** updates
+- You want a **simple**, **scalable**, and **HTTP-friendly** solution
+
+🟡 **Use WebSockets** when:
+- You need **real-time** two-way communication
+- The client should also be able to **push** events to the server
+
+---
+
+💡 **Why choose Lumen (SSE)?**
+- Zero dependencies
+- High performance for broadcasting updates
+- Great for lightweight, read-only real-time applications
+
+---
+
+## 💬 Questions? Feedback?
+
+Feel free to [open an issue](https://github.com/your-repo/issues) or contact the maintainer.
+
+---
