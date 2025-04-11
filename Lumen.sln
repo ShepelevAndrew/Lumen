@@ -2,9 +2,9 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Lumen", "src\Lumen\Lumen.csproj", "{BCFBF731-D91C-4631-A89C-A50DDB20E805}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Examples", "Examples", "{D4F5989A-7720-401F-B910-93D17F3AF6D2}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Samples", "Samples", "{D4F5989A-7720-401F-B910-93D17F3AF6D2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Lumen.Web", "examples\Lumen.Web\Lumen.Web.csproj", "{81826685-3206-48FF-936C-EEF2A81CEF18}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Lumen.Web", "samples\Lumen.Web\Lumen.Web.csproj", "{81826685-3206-48FF-936C-EEF2A81CEF18}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Src", "Src", "{5F176DC4-F2BC-420A-82C2-53AD13F3F29A}"
 EndProject
