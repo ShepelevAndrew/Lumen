@@ -9,6 +9,8 @@ namespace Lumen.Core.Application;
 
 public interface ISseService
 {
+    public IEnumerable<SseClientId> GetSseClients();
+
     public IEnumerable<SseClientId> GetSseClients(Guid clientId);
 
     void AddClient(SseClient client);
@@ -48,6 +50,8 @@ public class SseService(SseConfig config) : ISseService
         ? TimeSpan.FromMinutes(config.ConnectionLiveMinutes.Value)
         : TimeSpan.Zero;
 
+    public IEnumerable<SseClientId> GetSseClients() => _clients.Keys;
+
     public IEnumerable<SseClientId> GetSseClients(Guid clientId)
         => _clients.Keys.Where(key => key.ClientId == clientId);
 
@@ -72,10 +76,10 @@ public class SseService(SseConfig config) : ISseService
         {
             ct.ThrowIfCancellationRequested();
 
-            if(client.ReceivedEvents > config.MaxEventsForConnection)
+            if (client.ReceivedEvents > config.MaxEventsForConnection)
                 break;
 
-            if(client.GetLiveDuration() > _connectionMaxLive && _connectionMaxLive != TimeSpan.Zero)
+            if (client.GetLiveDuration() > _connectionMaxLive && _connectionMaxLive != TimeSpan.Zero)
                 break;
 
             if (config.PingIntervalMilliseconds == 0)

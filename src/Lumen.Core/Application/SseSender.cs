@@ -25,12 +25,15 @@ public interface ISseSender
         CancellationToken ct = default);
 
     Task SendAsync(
-        IEnumerable<SseClientId> toClientIds,
+        Guid clientId,
+        Guid deviceId,
         CancellationToken ct = default);
 
     Task SendAsync(
-        Guid clientId,
-        Guid deviceId,
+        IEnumerable<SseClientId> toClientIds,
+        CancellationToken ct = default);
+
+    Task SendToAllClientsAsync(
         CancellationToken ct = default);
 
     Task SendToClientAllDevicesAsync(
@@ -74,6 +77,12 @@ public class SseSender(
         => await sseService.SendAsync(toClientId, _message, ct);
 
     public async Task SendAsync(
+        Guid clientId,
+        Guid deviceId,
+        CancellationToken ct = default)
+        => await SendAsync(new SseClientId(clientId, deviceId), ct);
+
+    public async Task SendAsync(
         IEnumerable<SseClientId> toClientIds,
         CancellationToken ct = default)
     {
@@ -83,17 +92,17 @@ public class SseSender(
         }
     }
 
-    public async Task SendAsync(
-        Guid clientId,
-        Guid deviceId,
-        CancellationToken ct = default)
-        => await SendAsync(new SseClientId(clientId, deviceId), ct);
+    public async Task SendToAllClientsAsync(CancellationToken ct = default)
+    {
+        var sseClients = sseService.GetSseClients();
+        await SendAsync(sseClients, ct);
+    }
 
     public async Task SendToClientAllDevicesAsync(
         Guid toClientId,
         CancellationToken ct = default)
     {
-        var sseContractorClients = sseService.GetSseClients(toClientId);
-        await SendAsync(sseContractorClients, ct);
+        var sseClients = sseService.GetSseClients(toClientId);
+        await SendAsync(sseClients, ct);
     }
 }
