@@ -1,6 +1,6 @@
 using Lumen.Core.Application;
 using Lumen.Extensions.DependencyInjection;
-using Lumen.Web.Models;
+using Lumen.MinimalApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 {
@@ -21,7 +21,7 @@ app.MapPost("/send-message", async (
     Message message,
     ISseBuilder sse)
     => await sse.Build()
-        .SetEventName("new_message")
+        .SetEvent("new_message")
         .SetData(message)
         .SendToAllClientsAsync());
 

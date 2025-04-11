@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json;
 
-namespace Lumen.Web.Models;
+namespace Lumen.MinimalApi.Models;
 
 public record Message(
     [property: JsonProperty("name")] string Name,
