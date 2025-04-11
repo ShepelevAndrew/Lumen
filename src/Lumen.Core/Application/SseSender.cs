@@ -10,7 +10,7 @@ public interface ISseBuilder
 
 public interface IEventNameSetter : IDataSetter
 {
-    IDataSetter SetEventName(string eventName);
+    IDataSetter SetEvent(string eventName);
 }
 
 public interface IDataSetter
@@ -54,7 +54,7 @@ public class SseSender(
         return this;
     }
 
-    public IDataSetter SetEventName(string eventName)
+    public IDataSetter SetEvent(string eventName)
     {
         _message = $"event: {eventName}\n";
 

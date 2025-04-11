@@ -9,7 +9,7 @@ public class SseOptions
 
     public Func<HttpContext, Guid> UserId { get; set; } = _ => Guid.NewGuid();
 
-    public Func<HttpContext, Guid?> DeviceId { get; set; } = _ => null;
+    public Func<HttpContext, Guid?> DeviceId { get; set; } = _ => Guid.NewGuid();
 
     public SseClient GetSseClient(HttpContext context)
         => new(UserId(context), DeviceId(context), new StreamWriter(context.Response.Body));
