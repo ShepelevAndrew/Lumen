@@ -2,7 +2,7 @@
 
 public class SseConfig
 {
-    public int PingIntervalMilliseconds { get; set; } = 60_000;
+    public int PingIntervalMilliseconds { get; set; }
 
     public int? ConnectionLiveMinutes { get; set; }
 
