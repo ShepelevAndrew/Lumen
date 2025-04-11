@@ -29,14 +29,16 @@ dotnet add package Lumen.SSE
 ## 🚀 Usage
 
 #### 1. Configure services
-
+To customize global SSE behavior (ping interval, connection limits, etc.), see  
+👉 [AddSse Configuration Options](./Lumen.md#addsseconfigure)
 ```csharp
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddSse();
 ```
 
 #### 2. Configure middleware
-
+To customize middleware-level behavior such as connection path, user/device IDs, etc., see  
+👉 [UseSse Configuration Options](./Lumen.md#usesseoptions)
 ```csharp
 var app = builder.Build();
 app.UseSse();
@@ -49,7 +51,7 @@ app.MapPost("/send-message", async (
     Message message,
     ISseBuilder sse)
     => await sse.Build()
-        .SetEventName("new_message")
+        .SetEvent("new_message")
         .SetData(message)
         .SendToAllClientsAsync(clientId));
 ```
@@ -107,6 +109,6 @@ eventSource.onerror = (err) => {
 
 ## 💬 Questions? Feedback?
 
-Feel free to [open an issue](https://github.com/your-repo/issues) or contact the maintainer.
+Feel free to [open an issue](https://github.com/ShepelevAndrew/Lumen/issues) or contact the maintainer.
 
 ---
