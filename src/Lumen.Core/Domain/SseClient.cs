@@ -27,4 +27,4 @@ public class SseClient
     public void AddReceivedEvent() => ReceivedEvents++;
 
     public TimeSpan GetLiveDuration() => DateTime.UtcNow - CreatedTime;
-};
+}

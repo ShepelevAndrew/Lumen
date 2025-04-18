@@ -6,5 +6,7 @@ public class SseConfig
 
     public int? ConnectionLiveMinutes { get; set; }
 
-    public int? MaxEventsForConnection { get; set; }
-};
+    public uint? MaxEventsForConnection { get; set; }
+
+    public uint? MaxNotificationBytes { get; set; }
+}
