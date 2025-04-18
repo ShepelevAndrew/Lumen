@@ -23,7 +23,7 @@ var app = builder.Build();
     .UseSse(options =>
     {
         options.UserId = ctx => ctx.Request.Query["id"]!;
-        options.DeviceId = ctx => ctx.Request.Query["deviceId"]!;
+        options.DeviceId = ctx => ctx.Request.Query["deviceId"];
     });
 }
 
