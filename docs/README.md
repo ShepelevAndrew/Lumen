@@ -53,7 +53,7 @@ app.MapPost("/send-message", async (
     => await sse.New()
         .SetEvent("new_message")
         .SetData(message)
-        .SendToAllClientsAsync(clientId));
+        .SendToAllClientsAsync());
 ```
 
 ### 📡 Client-Side (JavaScript)
