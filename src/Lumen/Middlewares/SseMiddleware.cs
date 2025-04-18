@@ -1,5 +1,5 @@
 ﻿using Lumen.Configurations;
-using Lumen.Core.Application;
+using Lumen.Core.Application.Services.Abstractions;
 using Lumen.Core.Domain;
 using Lumen.Core.Domain.ServerMessages;
 using Lumen.Core.Domain.ServerMessages.Abstractions;

@@ -1,5 +1,8 @@
-﻿using Lumen.Core.Application;
-using Lumen.Core.Application.Configurations;
+﻿using Lumen.Core.Application.Configurations;
+using Lumen.Core.Application.FluentBuilder;
+using Lumen.Core.Application.FluentBuilder.Abstractions;
+using Lumen.Core.Application.Services;
+using Lumen.Core.Application.Services.Abstractions;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Lumen.Extensions.DependencyInjection;
@@ -16,6 +19,6 @@ public static class SseServiceCollectionExtensions
         return services
             .AddSingleton(sseConfig)
             .AddSingleton<ISseService, SseService>()
-            .AddScoped<ISseBuilder, SseSender>();
+            .AddScoped<ISsePublisher, SsePublisher>();
     }
 }

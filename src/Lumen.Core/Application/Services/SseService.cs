@@ -1,46 +1,13 @@
 ﻿using System.Collections.Concurrent;
+using System.Text;
 using Lumen.Core.Application.Configurations;
+using Lumen.Core.Application.Services.Abstractions;
 using Lumen.Core.Domain;
 using Lumen.Core.Domain.ServerMessages;
 using Lumen.Core.Domain.ServerMessages.Abstractions;
 using Lumen.Core.Domain.ValueObjects;
 
-namespace Lumen.Core.Application;
-
-public interface ISseService
-{
-    public IEnumerable<SseClientId> GetSseClients();
-
-    public IEnumerable<SseClientId> GetSseClients(Guid clientId);
-
-    void AddClient(SseClient client);
-
-    Task RemoveClient(SseClientId id);
-
-    Task ListenAsync(
-        SseClientId id,
-        CancellationToken ct);
-
-    bool ClientExists(Guid clientId);
-
-    bool ClientExists(SseClientId id);
-
-    Task SendAsync(
-        SseClientId id,
-        string? eventName,
-        string eventData,
-        CancellationToken ct = default);
-
-    Task SendAsync(
-        SseClientId id,
-        string message,
-        CancellationToken ct = default);
-
-    Task SendServerMessage(
-        SseClientId id,
-        IServerMessage message,
-        CancellationToken ct = default);
-}
+namespace Lumen.Core.Application.Services;
 
 public class SseService(SseConfig config) : ISseService
 {
@@ -96,24 +63,20 @@ public class SseService(SseConfig config) : ISseService
 
     public async Task SendAsync(
         SseClientId id,
-        string? eventName,
-        string eventData,
+        Notification notification,
         CancellationToken ct = default)
     {
-        var eventMessage = $"event: {eventName}\ndata: {eventData}\n\n";
-        await SendAsync(id, eventMessage, ct);
-    }
+        var sseNotification = notification.ToSseNotification();
+        if (Encoding.ASCII.GetByteCount(sseNotification) >= config.MaxNotificationBytes)
+        {
+            return;
+        }
 
-    public async Task SendAsync(
-        SseClientId id,
-        string message,
-        CancellationToken ct = default)
-    {
         if (_clients.TryGetValue(id, out var client))
         {
             try
             {
-                await client.ResponseWriter.WriteAsync(message);
+                await client.ResponseWriter.WriteAsync(sseNotification);
                 await client.ResponseWriter.FlushAsync(ct);
 
                 client.AddReceivedEvent();
@@ -129,5 +92,5 @@ public class SseService(SseConfig config) : ISseService
         SseClientId id,
         IServerMessage serverMessage,
         CancellationToken ct = default)
-        => await SendAsync(id, serverMessage.Event, serverMessage.Data, ct);
+        => await SendAsync(id, new Notification(null, serverMessage.Event, serverMessage.Data), ct);
 }
