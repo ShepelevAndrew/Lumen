@@ -1,10 +1,6 @@
-# Lumen
+# 🔌Lumen — SSE for ASP.NET Core
 
 [![NuGet Downloads](https://img.shields.io/nuget/dt/Lumen.SSE.svg)](https://www.nuget.org/packages/Lumen.SSE) [![NuGet Version](https://img.shields.io/nuget/v/Lumen.SSE.svg)](https://www.nuget.org/packages/Lumen.SSE)
-
----
-
-## 🔌 SSE for ASP.NET Core
 
 A lightweight, configurable **Server-Sent Events (SSE)** library for ASP.NET Core.  
 Easily add real-time, uni-directional server-to-client messaging without WebSockets.
