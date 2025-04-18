@@ -1,8 +1,8 @@
 # Lumen
 
----
-
 [![NuGet Downloads](https://img.shields.io/nuget/dt/Lumen.SSE.svg)](https://www.nuget.org/packages/Lumen.SSE) [![NuGet Version](https://img.shields.io/nuget/v/Lumen.SSE.svg)](https://www.nuget.org/packages/Lumen.SSE)
+
+---
 
 ## 🔌 SSE for ASP.NET Core
 
