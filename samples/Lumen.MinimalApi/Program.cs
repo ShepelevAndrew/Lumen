@@ -9,7 +9,10 @@ var builder = WebApplication.CreateBuilder(args);
 {
     builder.Services
     .AddCors(options => options.AddPolicy("AllowAll", policy => policy.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader()))
-    .AddSse();
+    .AddSse(configure: config =>
+    {
+        config.MaxNotificationBytes = 500;
+    });
 }
 
 var app = builder.Build();
@@ -19,13 +22,14 @@ var app = builder.Build();
     .UseCors("AllowAll")
     .UseSse(options =>
     {
-        options.UserId = ctx => new Guid(ctx.Request.Query["id"].First()!);
+        options.UserId = ctx => ctx.Request.Query["id"]!;
+        options.DeviceId = ctx => ctx.Request.Query["deviceId"]!;
     });
 }
 
 // SEND TO CONCRETE CLIENT OR CONCRETE CLIENT DEVICE
-app.MapPost("/send-message/{clientId:guid}", async (
-    Guid clientId,
+app.MapPost("/send-message/{userId:guid}", async (
+    Guid userId,
     Guid? deviceId,
     Message message,
     ISsePublisher sse) =>
@@ -36,11 +40,11 @@ app.MapPost("/send-message/{clientId:guid}", async (
 
     if (deviceId.HasValue)
     {
-        await sender.SendAsync(clientId, deviceId.Value);
+        await sender.SendAsync(id: new(userId, deviceId));
     }
     else
     {
-        await sender.SendToClientAllDevicesAsync(clientId);
+        await sender.SendToClientAllDevicesAsync(userId);
     }
 });
 

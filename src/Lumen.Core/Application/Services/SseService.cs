@@ -19,8 +19,8 @@ public class SseService(SseConfig config) : ISseService
 
     public IEnumerable<SseClientId> GetSseClients() => _clients.Keys;
 
-    public IEnumerable<SseClientId> GetSseClients(Guid clientId)
-        => _clients.Keys.Where(key => key.ClientId == clientId);
+    public IEnumerable<SseClientId> GetSseClients(string userId)
+        => _clients.Keys.Where(key => key.UserId == userId);
 
     public void AddClient(SseClient client) => _clients[client.Id] = client;
 
@@ -43,7 +43,7 @@ public class SseService(SseConfig config) : ISseService
         {
             ct.ThrowIfCancellationRequested();
 
-            if (client.ReceivedEvents > config.MaxEventsForConnection)
+            if (client.ReceivedNotifications > config.MaxNotificationsForConnection)
                 break;
 
             if (client.GetLiveDuration() > _connectionMaxLive && _connectionMaxLive != TimeSpan.Zero)
@@ -59,7 +59,7 @@ public class SseService(SseConfig config) : ISseService
 
     public bool ClientExists(SseClientId id) => _clients.ContainsKey(id);
 
-    public bool ClientExists(Guid clientId) => _clients.Keys.Any(key => key.ClientId == clientId);
+    public bool ClientExists(string clientId) => _clients.Keys.Any(key => key.UserId == clientId);
 
     public async Task SendAsync(
         SseClientId id,
@@ -79,7 +79,7 @@ public class SseService(SseConfig config) : ISseService
                 await client.ResponseWriter.WriteAsync(sseNotification);
                 await client.ResponseWriter.FlushAsync(ct);
 
-                client.AddReceivedEvent();
+                client.AddReceivedNotification();
             }
             catch
             {

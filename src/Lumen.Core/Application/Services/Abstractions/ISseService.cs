@@ -8,7 +8,7 @@ public interface ISseService
 {
     public IEnumerable<SseClientId> GetSseClients();
 
-    public IEnumerable<SseClientId> GetSseClients(Guid clientId);
+    public IEnumerable<SseClientId> GetSseClients(string userId);
 
     void AddClient(SseClient client);
 
@@ -16,7 +16,7 @@ public interface ISseService
 
     Task ListenAsync(SseClientId id, CancellationToken ct = default);
 
-    bool ClientExists(Guid clientId);
+    bool ClientExists(string userId);
 
     bool ClientExists(SseClientId id);
 

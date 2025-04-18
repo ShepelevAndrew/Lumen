@@ -62,12 +62,6 @@ public class SsePublisher(
         => await sseService.SendAsync(id, new Notification(_id, _event, _data, _retry), ct);
 
     public async Task SendAsync(
-        Guid clientId,
-        Guid deviceId,
-        CancellationToken ct = default)
-        => await SendAsync(new SseClientId(clientId, deviceId), ct);
-
-    public async Task SendAsync(
         IEnumerable<SseClientId> ids,
         CancellationToken ct = default)
     {
@@ -77,11 +71,14 @@ public class SsePublisher(
         }
     }
 
+    public async Task SendToClientAllDevicesAsync(Guid userId, CancellationToken ct = default)
+        => await SendToClientAllDevicesAsync(userId.ToString(), ct);
+
     public async Task SendToClientAllDevicesAsync(
-        Guid clientId,
+        string userId,
         CancellationToken ct = default)
     {
-        var sseClients = sseService.GetSseClients(clientId);
+        var sseClients = sseService.GetSseClients(userId);
         await SendAsync(sseClients, ct);
     }
 

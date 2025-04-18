@@ -2,29 +2,17 @@
 
 namespace Lumen.Core.Domain;
 
-public class SseClient
+public class SseClient(SseClientId id, StreamWriter responseWriter)
 {
-    public SseClient(SseClientId id, StreamWriter responseWriter)
-    {
-        Id = id;
-        ResponseWriter = responseWriter;
-    }
+    public SseClientId Id { get; private set; } = id;
 
-    public SseClient(Guid clientId, Guid? deviceId, StreamWriter responseWriter)
-    {
-        Id = new SseClientId(clientId, deviceId);
-        ResponseWriter = responseWriter;
-    }
+    public StreamWriter ResponseWriter { get; private set; } = responseWriter;
 
-    public SseClientId Id { get; private set; }
-
-    public StreamWriter ResponseWriter { get; private set; }
-
-    public uint ReceivedEvents { get; private set; }
+    public uint ReceivedNotifications { get; private set; }
 
     public DateTime CreatedTime { get; } = DateTime.UtcNow;
 
-    public void AddReceivedEvent() => ReceivedEvents++;
+    public void AddReceivedNotification() => ReceivedNotifications++;
 
     public TimeSpan GetLiveDuration() => DateTime.UtcNow - CreatedTime;
 }

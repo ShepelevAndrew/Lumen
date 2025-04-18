@@ -38,16 +38,15 @@ public interface INotificationSender
         CancellationToken ct = default);
 
     Task SendAsync(
-        Guid clientId,
-        Guid deviceId,
-        CancellationToken ct = default);
-
-    Task SendAsync(
         IEnumerable<SseClientId> ids,
         CancellationToken ct = default);
 
     Task SendToClientAllDevicesAsync(
-        Guid clientId,
+        Guid userId,
+        CancellationToken ct = default);
+
+    Task SendToClientAllDevicesAsync(
+        string userId,
         CancellationToken ct = default);
 
     Task SendToAllClientsAsync(
