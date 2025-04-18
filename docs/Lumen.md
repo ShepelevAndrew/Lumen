@@ -134,7 +134,7 @@ Global notifications, announcements, or system-wide updates.
 ## 🧪 Example Usage
 
 ```csharp
-var sender = sse.Build()
+var sender = sse.New()
     .SetEventName("new_message")
     .SetData(message);
 

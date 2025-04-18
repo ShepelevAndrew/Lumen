@@ -49,8 +49,8 @@ app.UseSse();
 ```csharp
 app.MapPost("/send-message", async (
     Message message,
-    ISseBuilder sse)
-    => await sse.Build()
+    ISsePublisher sse)
+    => await sse.New()
         .SetEvent("new_message")
         .SetData(message)
         .SendToAllClientsAsync(clientId));
