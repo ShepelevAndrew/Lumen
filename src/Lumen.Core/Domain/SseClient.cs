@@ -2,11 +2,11 @@
 
 namespace Lumen.Core.Domain;
 
-public class SseClient(SseClientId id, StreamWriter responseWriter)
+public class SseClient(SseClientId id, StreamWriter response)
 {
     public SseClientId Id { get; private set; } = id;
 
-    public StreamWriter ResponseWriter { get; private set; } = responseWriter;
+    public StreamWriter Response { get; private set; } = response;
 
     public uint ReceivedNotifications { get; private set; }
 

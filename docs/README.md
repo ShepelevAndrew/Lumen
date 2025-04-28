@@ -47,7 +47,8 @@ app.UseSse();
 ```
 
 #### 3. Send events
-
+To send events in different ways and configure middleware part, see
+👉 [Sending Events with ISsePublisher](./Lumen.md#sendingeventswithissepublisher)
 ```csharp
 app.MapPost("/send-message", async (
     Message message,

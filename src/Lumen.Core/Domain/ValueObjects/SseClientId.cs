@@ -11,4 +11,10 @@ public record SseClientId(string UserId, string? DeviceId = null)
         : this(userId.ToString(), deviceId)
     {
     }
+
+    public string UserId { get; } = UserId;
+
+    public string? DeviceId { get; } = DeviceId;
+
+    public static SseClientId Generate() => new(Guid.NewGuid(), Guid.NewGuid());
 }

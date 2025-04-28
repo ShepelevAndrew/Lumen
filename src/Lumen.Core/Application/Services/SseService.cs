@@ -28,7 +28,7 @@ public class SseService(SseConfig config) : ISseService
     {
         if (_clients.TryGetValue(id, out var client))
         {
-            await client.ResponseWriter.DisposeAsync();
+            await client.Response.DisposeAsync();
             _clients.Remove(id, out _);
         }
     }
@@ -76,8 +76,8 @@ public class SseService(SseConfig config) : ISseService
         {
             try
             {
-                await client.ResponseWriter.WriteAsync(sseNotification);
-                await client.ResponseWriter.FlushAsync(ct);
+                await client.Response.WriteAsync(sseNotification);
+                await client.Response.FlushAsync();
 
                 client.AddReceivedNotification();
             }

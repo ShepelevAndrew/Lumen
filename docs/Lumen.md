@@ -1,4 +1,135 @@
-﻿# 🧪 Configuration Options
+﻿# 📚 Lumen SSE Library — Sending Events to Clients
+
+### Basic Configuration
+If you don't need to manage UserId or DeviceId, you can use the default configuration:
+
+```csharp
+app.UseSse();
+```
+
+* In this setup, random GUIDs are assigned to UserId and DeviceId.
+* You can send messages to all clients.
+* You won't be able to target specific users or devices.
+
+### Single Device per User
+To allow only one device per user (i.e., only the latest connection is active), configure:
+
+```csharp
+app.UseSse(options =>
+{
+    options.UserId = ctx => ctx.Request.Query["id"]!;
+    options.DeviceId = ctx => null;
+});
+```
+
+* UserId is taken from the query string (?id=...), but you can use claims.
+* DeviceId is disabled (null), meaning connecting again will disconnect the previous session for the same user.
+
+### Multiple Devices per User
+If you want to allow multiple devices or browser tabs per user:
+
+```csharp
+app.UseSse(options =>
+{
+    options.UserId = ctx => ctx.Request.Query["id"]!;
+});
+```
+
+* Each device (or tab) will have its own unique DeviceId (generated as a Guid by default).
+
+### Custom DeviceId Support
+You can also provide your own DeviceId from the query parameters:
+
+```csharp
+app.UseSse(options =>
+{
+    options.UserId = ctx => ctx.Request.Query["id"]!;
+    options.DeviceId = ctx => ctx.Request.Query["deviceId"];
+});
+```
+
+* Useful if you already have a device identifier in your system.
+
+---
+
+# 📤 Sending Events with ISsePublisher
+ISsePublisher provides an easy and flexible way to send events.
+
+1. Send to All Connected Clients
+
+```csharp
+app.MapPost("/send-message", async (ISsePublisher sse)
+    => await sse.New()
+        .SetData(new { Name = "Alex", Body = "Hello!" })
+        .SendToAllClientsAsync());
+```
+
+2. Send to a Specific User (All Devices)
+
+```csharp
+app.MapPost("/send-message/{userId:guid}", async (
+    Guid userId,
+    ISsePublisher sse)
+    => await sse.New()
+        .SetData(new { Name = "Alex", Body = "Hello!" })
+        .SendToClientAllDevicesAsync(userId));
+```
+
+3. Send to a Specific User and Device
+
+```csharp
+app.MapPost("/send-message/{userId:guid}/{deviceId:guid}", async (
+    Guid userId,
+    Guid deviceId,
+    ISsePublisher sse)
+    => await sse.New()
+        .SetData(new { Name = "Alex", Body = "Hello!" })
+        .SendAsync(id: new(userId, deviceId)));
+```
+
+## Building and Sending Events
+You can chain options when creating an event:
+
+```csharp
+await sse.New()
+    .SetId(Guid.NewGuid())           // (Optional) Set a custom event ID
+    .SetRetry(10)                    // (Optional) Set retry delay (in milliseconds) after disconnection
+    .SetEvent("new_message")          // (Optional) Specify the event name
+    .SetData(message)                 // (Required) Provide the event payload (serialized as JSON)
+    .SendToAllClientsAsync();         // (Required) Send the event
+```
+
+---
+
+## 📜 SSE Protocol (HTTP Specification)
+Each message sent to the client can include the following fields:
+
+
+### Event Fields
+
+| Field  | Description |
+|--------|-------------|
+| `event` | The event name. Clients can listen for it using `addEventListener(eventName)`. If omitted, the `onmessage` handler is triggered by default. |
+| `data` | The message payload. If multiple `data:` lines are received, they are concatenated with newline characters. |
+| `id` | The event ID. It helps the client resume events correctly after a reconnection. |
+| `retry` | The delay (in milliseconds) before the browser attempts to reconnect after a disconnection. |
+
+> **Note:** Any other fields are ignored by the client.
+
+---
+
+## ⚠️ Browser Connection Limitations
+
+- **Without HTTP/2**, most browsers (e.g., Chrome, Firefox) limit the number of open SSE connections to **6 per domain**.
+- This means you can open **only 6 SSE connections across all tabs** for a domain like `example.com`.
+- **With HTTP/2**, the server and client negotiate the maximum number of simultaneous connections (typically **100+**).
+- This limitation has been marked as **"Won't Fix"** by major browser vendors.
+
+> **Tip:** Consider using HTTP/2 to avoid these SSE connection limitations.
+
+---
+
+# 🧪 Configuration Options
 
 This document explains how to configure your Server-Sent Events (SSE) setup using `AddSse(configure)` and `UseSse(options)`.
 
@@ -61,88 +192,6 @@ app.UseSse(options =>
 });
 ```
 
----
-
-# 📤 Sending SSE Events
-
-This library provides a flexible and powerful API for delivering messages to clients connected via Server-Sent Events (SSE). You can send events to individual devices, all devices for a user, multiple clients, or broadcast to all connected clients.
-
----
-
-## ✨ Available Methods
-
-### 1. `SendAsync(SseClientId toClientId, CancellationToken ct = default)`
-Send an event to a specific client device.
-
-**Parameters:**
-- `toClientId`: Represents the combination of `UserId` and `DeviceId`.
-- `ct`: Optional cancellation token.
-
-**Use case:**  
-Send an event to one connected device of a user.
-
----
-
-### 2. `SendAsync(Guid clientId, Guid deviceId, CancellationToken ct = default)`
-Send an event to a specific user and device combination.
-
-**Parameters:**
-- `clientId`: User ID.
-- `deviceId`: Device ID.
-- `ct`: Optional cancellation token.
-
-**Use case:**  
-If you know both the user and device IDs directly.
-
----
-
-### 3. `SendAsync(IEnumerable<SseClientId> toClientIds, CancellationToken ct = default)`
-Send an event to multiple client devices.
-
-**Parameters:**
-- `toClientIds`: A collection of client identifiers.
-- `ct`: Optional cancellation token.
-
-**Use case:**  
-Notify a group of connected clients (e.g., participants in a chat or room).
-
----
-
-### 4. `SendToClientAllDevicesAsync(Guid toClientId, CancellationToken ct = default)`
-Send an event to **all devices** of a single user.
-
-**Parameters:**
-- `toClientId`: User ID.
-- `ct`: Optional cancellation token.
-
-**Use case:**  
-Keep all user devices in sync (mobile, desktop, etc.).
-
----
-
-### 5. `SendToAllClientsAsync(CancellationToken ct = default)`
-Broadcast an event to **every connected client**.
-
-**Parameters:**
-- `ct`: Optional cancellation token.
-
-**Use case:**  
-Global notifications, announcements, or system-wide updates.
-
----
-
-## 🧪 Example Usage
-
-```csharp
-var sender = sse.New()
-    .SetEventName("new_message")
-    .SetData(message);
-
-// Send to all user devices
-await sender.SendToClientAllDevicesAsync(userId);
-
-// Send to a specific device
-await sender.SendAsync(userId, deviceId);
 
 
 
